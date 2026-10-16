@@ -1,11 +1,13 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GracefulShutdownModule } from '@tygra/nestjs-graceful-shutdown';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { join } from 'path';
+import { AuthModule } from '../modules/auth/auth.module';
+import { MaintainerrAuthGuard } from '../modules/auth/guards/auth.guard';
 import { ExternalApiModule } from '../modules/api/external-api/external-api.module';
 import { GitHubApiModule } from '../modules/api/github-api/github-api.module';
 import { MediaServerFactory } from '../modules/api/media-server/media-server.factory';
@@ -52,6 +54,7 @@ import { resolveUiRootPath } from './config/uiPath';
     }),
     LogsModule,
     SettingsModule,
+    AuthModule,
     PlexApiModule,
     MediaServerModule,
     ExternalApiModule,
@@ -94,6 +97,10 @@ import { resolveUiRootPath } from './config/uiPath';
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: MaintainerrAuthGuard,
     },
   ],
 })

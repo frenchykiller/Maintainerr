@@ -6,18 +6,20 @@ import {
   CogIcon,
   CollectionIcon,
   EyeIcon,
+  LogoutIcon,
   PhotographIcon,
   ServerIcon,
   XIcon,
 } from '@heroicons/react/outline'
 import { useLingui } from '@lingui/react/macro'
-import { ReactNode, use, useMemo, useRef } from 'react'
+import { ReactNode, use, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SearchContext from '../../../contexts/search-context'
 import { prefetchHandlers } from '../../../utils/routePrefetch'
 import Messages from '../../Messages/Messages'
 import VersionStatus from '../../VersionStatus'
 import { useMediaServerSetupNavigationGuard } from '../MediaServerSetupGuard'
+import { GetApiHandler, PostApiHandler } from '../../../utils/ApiHandler'
 
 interface NavBarLink {
   key: string
@@ -104,6 +106,27 @@ const NavBar: React.FC<NavBarProps> = ({ open, setClosed }) => {
     ],
     [collectionsLabel, t],
   )
+
+  const [authStatus, setAuthStatus] = useState<any>(null)
+
+  useEffect(() => {
+    GetApiHandler('/auth/status')
+      .then((status) => {
+        if (status?.authenticated) {
+          setAuthStatus(status)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await PostApiHandler('/auth/logout', {})
+    } catch {
+      // ignore
+    }
+    window.location.reload()
+  }
 
   const linkIsActive = (link: NavBarLink) => {
     if (link.matchPattern) {
@@ -210,6 +233,16 @@ const NavBar: React.FC<NavBarProps> = ({ open, setClosed }) => {
                         </Link>
                       )
                     })}
+                    {authStatus?.authenticated && (
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full cursor-pointer items-center rounded-md px-2 py-2 text-base leading-6 font-medium text-zinc-300 transition duration-150 ease-in-out hover:bg-zinc-700 hover:text-white"
+                      >
+                        <LogoutIcon className="mr-3 h-6 w-6" />
+                        {t`Sign Out`}
+                      </button>
+                    )}
                   </nav>
                 </div>
                 <span className="mb-4 flex flex-col gap-y-4">
@@ -259,6 +292,16 @@ const NavBar: React.FC<NavBarProps> = ({ open, setClosed }) => {
                     </Link>
                   )
                 })}
+                {authStatus?.authenticated && (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="group flex w-full cursor-pointer items-center rounded-md px-2 py-2 text-lg leading-6 font-medium text-zinc-300 transition duration-150 ease-in-out hover:bg-zinc-700 hover:text-white"
+                  >
+                    <LogoutIcon className="mr-3 h-6 w-6" />
+                    {t`Sign Out`}
+                  </button>
+                )}
               </nav>
               <div className="flex flex-col gap-y-4">
                 <Messages />

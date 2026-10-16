@@ -1,7 +1,9 @@
 import { HealthResponse, LivenessResponse } from '@maintainerr/contracts';
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { HealthService } from './health.service';
+import { Public } from '../modules/auth/decorators/public.decorator';
 
+@Public()
 @Controller('/api/health')
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}

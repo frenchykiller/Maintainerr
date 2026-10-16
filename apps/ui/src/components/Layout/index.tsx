@@ -14,10 +14,13 @@ import {
 import { ToastContainer } from 'react-toastify'
 import SearchContext from '../../contexts/search-context'
 import { INTERACTION_DEBOUNCE_MS } from '../../utils/uiBehavior'
-import { SmallLoadingSpinner } from '../Common/LoadingSpinner'
+import LoadingSpinner, { SmallLoadingSpinner } from '../Common/LoadingSpinner'
 import SearchBar from '../Common/SearchBar'
 import NavBar from './NavBar'
 import TelemetryConsentModal from './TelemetryConsentModal'
+import LoginPage from '../Login/LoginPage'
+import { GetApiHandler } from '../../utils/ApiHandler'
+import type { AuthStatusDto } from '@maintainerr/contracts'
 
 type LayoutShellProps = {
   children: ReactNode
@@ -137,6 +140,39 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
 }
 
 const Layout: React.FC = () => {
+  const [authStatus, setAuthStatus] = useState<AuthStatusDto | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const checkAuth = () => {
+    GetApiHandler<AuthStatusDto>('/auth/status')
+      .then((status) => {
+        setAuthStatus(status)
+      })
+      .catch(() => {
+        setAuthStatus({
+          authRequired: false,
+          authenticated: true,
+          oidcEnabled: false,
+          user: null,
+        })
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  if (loading) {
+    return <LoadingSpinner containerClassName="h-screen" />
+  }
+
+  if (authStatus?.authRequired && !authStatus.authenticated) {
+    return <LoginPage onLoginSuccess={checkAuth} initialStatus={authStatus} />
+  }
+
   return (
     <LayoutShell>
       <Outlet />
