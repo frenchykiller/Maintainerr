@@ -229,6 +229,16 @@ describe('AuthService', () => {
         authInfo.state,
       );
 
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        'https://auth.example.com/oauth2/token',
+        expect.stringContaining('grant_type=authorization_code'),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          timeout: 15000,
+        },
+      );
       expect(user.email).toBe('john@example.com');
       expect(user.username).toBe('johndoe');
       expect(user.role).toBe('user');

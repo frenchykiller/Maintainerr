@@ -259,16 +259,11 @@ export class AuthService implements OnModuleInit {
     params.set('client_secret', clientSecret);
     params.set('code_verifier', codeVerifier);
 
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
-      'base64',
-    );
-
     let tokenRes: any;
     try {
       tokenRes = await axios.post(doc.token_endpoint, params.toString(), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${basicAuth}`,
         },
         timeout: 15000,
       });
